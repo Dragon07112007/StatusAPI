@@ -1,3 +1,18 @@
-fn main() {
-    println!("Hello!");
+use axum::{Json, Router, response::IntoResponse, routing::get};
+use serde_json::json;
+
+mod handlers;
+use handlers::sysinfo;
+
+#[tokio::main]
+async fn main() {
+ 
+    let app = Router::new().route("/", get(sysinfo));
+
+    let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
+    println!("Server started successfully at 0.0.0.0:3000");
+    axum::serve(listener,app).await.unwrap();
+
 }
+
+
