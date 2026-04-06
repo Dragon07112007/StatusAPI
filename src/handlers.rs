@@ -39,6 +39,10 @@ pub async fn sysinfo() -> impl IntoResponse {
         Value::String(sys.used_memory().to_string()),
     );
     map.insert(
+        "Memory Total".to_string(),
+        Value::String(sys.total_memory().to_string()),
+    );
+    map.insert(
         "GPU Usage".to_string(),
         Value::String(
             String::from_utf8_lossy(&gpu_usage.stdout)
