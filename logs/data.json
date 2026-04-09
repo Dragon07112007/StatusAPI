@@ -1,1 +1,227 @@
-{}
+[
+  {
+    "CPU Usage": "6.3679247",
+    "GPU Usage": "13",
+    "Memory Usage": "8505090048",
+    "Time": "1775560618",
+    "VRAM Usage": "807"
+  },
+  {
+    "CPU Usage": "6.619385",
+    "GPU Usage": "59",
+    "Memory Usage": "8236187648",
+    "Time": "1775560678",
+    "VRAM Usage": "752"
+  },
+  {
+    "CPU Usage": "24.079319",
+    "GPU Usage": "65",
+    "Memory Usage": "8611893248",
+    "Time": "1775561357",
+    "VRAM Usage": "818"
+  },
+  {
+    "CPU Usage": "7.025761",
+    "GPU Usage": "14",
+    "Memory Usage": "8294576128",
+    "Time": "1775561417",
+    "VRAM Usage": "792"
+  },
+  {
+    "CPU Usage": "7.762557",
+    "GPU Usage": "13",
+    "Memory Usage": "8350666752",
+    "Time": "1775561477",
+    "VRAM Usage": "827"
+  },
+  {
+    "CPU Usage": "25.50",
+    "GPU Usage": "7.57",
+    "Memory Usage": "7713936998",
+    "Time": "1775741705",
+    "VRAM Usage": "873"
+  },
+  {
+    "CPU Usage": "24.88",
+    "GPU Usage": "6.20",
+    "Memory Usage": "7688543369",
+    "Time": "1775741765",
+    "VRAM Usage": "880"
+  },
+  {
+    "CPU Usage": "23.14",
+    "GPU Usage": "9.03",
+    "Memory Usage": "7778055578",
+    "Time": "1775741825",
+    "VRAM Usage": "885"
+  },
+  {
+    "CPU Usage": "21.23",
+    "GPU Usage": "6.02",
+    "Memory Usage": "7894607735",
+    "Time": "1775741885",
+    "VRAM Usage": "881"
+  },
+  {
+    "CPU Usage": "26.31",
+    "GPU Usage": "8.85",
+    "Memory Usage": "7783516160",
+    "Time": "1775741991",
+    "VRAM Usage": "810"
+  },
+  {
+    "CPU Usage": "24.72",
+    "GPU Usage": "3.12",
+    "Memory Usage": "7637240422",
+    "Time": "1775742051",
+    "VRAM Usage": "790"
+  },
+  {
+    "CPU Usage": "25.10",
+    "GPU Usage": "5.02",
+    "Memory Usage": "7630253602",
+    "Time": "1775742111",
+    "VRAM Usage": "790"
+  },
+  {
+    "CPU Usage": "24.72",
+    "GPU Usage": "0.00",
+    "Memory Usage": "7622426487",
+    "Time": "1775742171",
+    "VRAM Usage": "791"
+  },
+  {
+    "CPU Usage": "24.62",
+    "GPU Usage": "0.00",
+    "Memory Usage": "7620058726",
+    "Time": "1775742231",
+    "VRAM Usage": "792"
+  },
+  {
+    "CPU Usage": "25.01",
+    "GPU Usage": "9.03",
+    "Memory Usage": "7632724036",
+    "Time": "1775742291",
+    "VRAM Usage": "806"
+  }
+,
+  {
+    "CPU Usage": "33.97",
+    "GPU Usage": "30.65",
+    "Memory Usage": "9939870652",
+    "Time": "1775744963",
+    "VRAM Usage": "758"
+  }
+,
+  {
+    "CPU Usage": "32.14",
+    "GPU Usage": "35.22",
+    "Memory Usage": "9992391748",
+    "Time": "1775745023",
+    "VRAM Usage": "747"
+  }
+,
+  {
+    "CPU Usage": "36.90",
+    "GPU Usage": "30.63",
+    "Memory Usage": "9942232064",
+    "Time": "1775745083",
+    "VRAM Usage": "776"
+  }
+,
+  {
+    "CPU Usage": "35.94",
+    "GPU Usage": "33.53",
+    "Memory Usage": "9899588267",
+    "Time": "1775745143",
+    "VRAM Usage": "776"
+  }
+,
+  {
+    "CPU Usage": "37.15",
+    "GPU Usage": "32.43",
+    "Memory Usage": "10003052066",
+    "Time": "1775745232",
+    "VRAM Usage": "799"
+  }
+,
+  {
+    "CPU Usage": "35.51",
+    "GPU Usage": "24.00",
+    "Memory Usage": "10087078434",
+    "Time": "1775745292",
+    "VRAM Usage": "791"
+  }
+,
+  {
+    "CPU Usage": "32.60",
+    "GPU Usage": "23.18",
+    "Memory Usage": "10349684190",
+    "Time": "1775745433",
+    "VRAM Usage": "4136"
+  }
+,
+  {
+    "CPU Usage": "31.97",
+    "GPU Usage": "16.62",
+    "Memory Usage": "10954936183",
+    "Time": "1775745493",
+    "VRAM Usage": "10209"
+  }
+,
+  {
+    "CPU Usage": "32.23",
+    "GPU Usage": "17.13",
+    "Memory Usage": "11008135782",
+    "Time": "1775745553",
+    "VRAM Usage": "9592"
+  }
+,
+  {
+    "CPU Usage": "36.96",
+    "GPU Usage": "42.22",
+    "Memory Usage": "11202136405",
+    "Time": "1775745613",
+    "VRAM Usage": "10214"
+  }
+,
+  {
+    "CPU Usage": "39.03",
+    "GPU Usage": "80.37",
+    "Memory Usage": "11331959125",
+    "Time": "1775745673",
+    "VRAM Usage": "10217"
+  }
+,
+  {
+    "CPU Usage": "36.03",
+    "GPU Usage": "97.17",
+    "Memory Usage": "11490455415",
+    "Time": "1775745733",
+    "VRAM Usage": "10156"
+  }
+,
+  {
+    "CPU Usage": "28.97",
+    "GPU Usage": "26.80",
+    "Memory Usage": "11449969459",
+    "Time": "1775745793",
+    "VRAM Usage": "10151"
+  }
+,
+  {
+    "CPU Usage": "31.83",
+    "GPU Usage": "30.60",
+    "Memory Usage": "11289486541",
+    "Time": "1775745853",
+    "VRAM Usage": "10190"
+  }
+,
+  {
+    "CPU Usage": "35.58",
+    "GPU Usage": "31.08",
+    "Memory Usage": "10205923874",
+    "Time": "1775745913",
+    "VRAM Usage": "1077"
+  }
+]

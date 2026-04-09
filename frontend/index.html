@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>System Status</title>
+  <style>
+    :root {
+      --bg: #101317;
+      --panel: rgba(20, 25, 31, 0.82);
+      --panel-strong: rgba(25, 31, 38, 0.96);
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --line: rgba(148, 163, 184, 0.16);
+      --accent: #14b8a6;
+      --accent-2: #f97316;
+      --accent-3: #facc15;
+      --good: #34d399;
+      --warn: #f59e0b;
+      --bad: #f87171;
+      --shadow: 0 30px 80px rgba(0, 0, 0, 0.35);
+      --message-bg: rgba(255, 255, 255, 0.04);
+      --json-bg: rgba(8, 11, 15, 0.98);
+      color-scheme: dark;
+    }
+
+    body[data-theme="light"] {
+      --bg: #f4efe7;
+      --panel: rgba(255, 252, 247, 0.8);
+      --panel-strong: rgba(255, 252, 247, 0.94);
+      --text: #1e1d1a;
+      --muted: #6f685d;
+      --line: rgba(33, 31, 27, 0.1);
+      --accent: #00796b;
+      --accent-2: #e07a5f;
+      --accent-3: #f2cc8f;
+      --good: #1d7f56;
+      --warn: #bb6c16;
+      --bad: #b33434;
+      --shadow: 0 30px 80px rgba(72, 52, 32, 0.12);
+      --message-bg: rgba(255, 255, 255, 0.56);
+      --json-bg: rgba(24, 28, 34, 0.96);
+      color-scheme: light;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(20, 184, 166, 0.18), transparent 28%),
+        radial-gradient(circle at 85% 15%, rgba(249, 115, 22, 0.16), transparent 22%),
+        linear-gradient(180deg, #0b0f13 0%, var(--bg) 100%);
+      padding: 32px 20px 48px;
+    }
+
+    body[data-theme="light"] {
+      background:
+        radial-gradient(circle at top left, rgba(242, 204, 143, 0.55), transparent 30%),
+        radial-gradient(circle at 85% 15%, rgba(224, 122, 95, 0.22), transparent 22%),
+        linear-gradient(180deg, #fcf8f2 0%, var(--bg) 100%);
+    }
+
+    .shell {
+      max-width: 1120px;
+      margin: 0 auto;
+    }
+
+    .hero {
+      display: grid;
+      gap: 24px;
+      grid-template-columns: 1.3fr 0.9fr;
+      align-items: end;
+      margin-bottom: 28px;
+    }
+
+    .hero-card,
+    .panel,
+    .metric {
+      background: var(--panel);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+    }
+
+    .hero-card {
+      padding: 32px;
+    }
+
+    .hero-actions {
+      margin-top: 24px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.9rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 18px;
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 32px;
+      height: 1px;
+      background: currentColor;
+    }
+
+    h1 {
+      margin: 0;
+      font-family: "Space Grotesk", "IBM Plex Sans", sans-serif;
+      font-size: clamp(2.2rem, 5vw, 4.8rem);
+      line-height: 0.95;
+      letter-spacing: -0.05em;
+      max-width: 10ch;
+    }
+
+    .lead {
+      margin: 18px 0 0;
+      max-width: 58ch;
+      color: var(--muted);
+      font-size: 1rem;
+      line-height: 1.7;
+    }
+
+    .summary {
+      padding: 28px;
+      display: grid;
+      gap: 18px;
+    }
+
+    .status-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding-bottom: 18px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      font-weight: 600;
+      background: rgba(0, 121, 107, 0.12);
+      color: var(--good);
+    }
+
+    .badge::before {
+      content: "";
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: currentColor;
+      box-shadow: 0 0 0 6px rgba(29, 127, 86, 0.12);
+    }
+
+    .meta-label {
+      font-size: 0.82rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+
+    .meta-value {
+      margin-top: 6px;
+      font-size: 1.05rem;
+      font-weight: 600;
+    }
+
+    .controls {
+      display: grid;
+      gap: 10px;
+    }
+
+    .controls label {
+      font-size: 0.85rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+
+    .controls-row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    input {
+      width: 100%;
+      border: 1px solid var(--line);
+      background: var(--panel-strong);
+      border-radius: 14px;
+      padding: 13px 14px;
+      font: inherit;
+      color: var(--text);
+    }
+
+    button {
+      border: 0;
+      border-radius: 14px;
+      padding: 13px 18px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      color: white;
+      background: linear-gradient(135deg, var(--accent), #0f9d8d);
+    }
+
+    .button-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      border-radius: 14px;
+      padding: 13px 18px;
+      font-weight: 700;
+      color: white;
+      background: linear-gradient(135deg, var(--accent-2), #d45c37);
+    }
+
+    .ghost-button {
+      color: var(--text);
+      background: var(--panel-strong);
+      border: 1px solid var(--line);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .metric {
+      padding: 22px;
+      position: relative;
+      overflow: hidden;
+      isolation: isolate;
+    }
+
+    .metric::after {
+      content: "";
+      position: absolute;
+      inset: auto -30px -40px auto;
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.32);
+      z-index: -1;
+    }
+
+    .metric-label {
+      font-size: 0.9rem;
+      color: var(--muted);
+      margin-bottom: 16px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+
+    .metric-value {
+      font-family: "Space Grotesk", "IBM Plex Sans", sans-serif;
+      font-size: clamp(1.8rem, 3vw, 2.8rem);
+      line-height: 1;
+      letter-spacing: -0.05em;
+      margin-bottom: 14px;
+    }
+
+    .metric-subtext {
+      font-size: 0.95rem;
+      color: var(--muted);
+      min-height: 1.4em;
+    }
+
+    .bar {
+      height: 10px;
+      background: rgba(30, 29, 26, 0.08);
+      border-radius: 999px;
+      overflow: hidden;
+      margin-top: 18px;
+    }
+
+    .bar > span {
+      display: block;
+      height: 100%;
+      width: 0;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--accent-3), var(--accent-2));
+      transition: width 350ms ease;
+    }
+
+    .message {
+      margin-top: 18px;
+      padding: 18px 20px;
+      border-radius: 18px;
+      background: var(--message-bg);
+      border: 1px solid var(--line);
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .message.error {
+      color: var(--bad);
+      border-color: rgba(179, 52, 52, 0.22);
+      background: rgba(179, 52, 52, 0.06);
+    }
+
+    .footer {
+      margin-top: 14px;
+      font-size: 0.88rem;
+      color: var(--muted);
+    }
+
+    .json-panel {
+      margin-top: 22px;
+      padding: 22px;
+      background: var(--json-bg);
+      color: #e9f1f7;
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      overflow: auto;
+    }
+
+    .json-panel h2 {
+      margin: 0 0 14px;
+      font-size: 0.95rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #9bb3c7;
+    }
+
+    .json-output {
+      margin: 0;
+      font: 0.95rem/1.6 "IBM Plex Mono", "SFMono-Regular", monospace;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    @media (max-width: 960px) {
+      .hero,
+      .grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 680px) {
+      body {
+        padding-inline: 14px;
+      }
+
+      .hero,
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-card,
+      .summary,
+      .metric {
+        border-radius: 22px;
+      }
+
+      .controls-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="hero">
+      <article class="hero-card">
+        <div class="eyebrow">Live Monitor</div>
+        <h1>System status at a glance.</h1>
+        <p class="lead">
+          This dashboard reads the live machine metrics exposed by the status API and refreshes automatically every 15 seconds.
+        </p>
+        <div class="hero-actions">
+          <a class="button-link" href="./history.html">Usage History</a>
+        </div>
+      </article>
+
+      <aside class="panel summary">
+        <div class="status-row">
+          <div>
+            <div class="meta-label">Connection</div>
+            <div class="meta-value" id="connection-text">Waiting for data</div>
+          </div>
+          <div class="badge" id="health-badge">Checking</div>
+        </div>
+
+        <div>
+          <div class="meta-label">Last Updated</div>
+          <div class="meta-value" id="last-updated">Never</div>
+        </div>
+
+        <div class="controls">
+          <label for="endpoint">API Endpoint</label>
+          <div class="controls-row">
+            <input id="endpoint" type="url" spellcheck="false">
+            <button id="theme-btn" class="ghost-button" type="button">Light Mode</button>
+            <button id="refresh-btn" type="button">Refresh</button>
+          </div>
+        </div>
+      </aside>
+    </section>
+
+    <section class="grid">
+      <article class="metric">
+        <div class="metric-label">CPU Usage</div>
+        <div class="metric-value" id="cpu-value">--</div>
+        <div class="metric-subtext" id="cpu-subtext">Waiting for API response</div>
+        <div class="bar"><span id="cpu-bar"></span></div>
+      </article>
+
+      <article class="metric">
+        <div class="metric-label">GPU Usage</div>
+        <div class="metric-value" id="gpu-value">--</div>
+        <div class="metric-subtext" id="gpu-subtext">Waiting for API response</div>
+        <div class="bar"><span id="gpu-bar"></span></div>
+      </article>
+
+      <article class="metric">
+        <div class="metric-label">Memory Usage</div>
+        <div class="metric-value" id="memory-value">--</div>
+        <div class="metric-subtext" id="memory-subtext">Waiting for API response</div>
+        <div class="bar"><span id="memory-bar"></span></div>
+      </article>
+
+      <article class="metric">
+        <div class="metric-label">VRAM Usage</div>
+        <div class="metric-value" id="vram-value">--</div>
+        <div class="metric-subtext" id="vram-subtext">Waiting for API response</div>
+        <div class="bar"><span id="vram-bar"></span></div>
+      </article>
+    </section>
+
+    <section class="message" id="message">
+      Connecting to the API.
+    </section>
+
+    <section class="json-panel">
+      <h2>Raw JSON</h2>
+      <pre class="json-output" id="json-output">Waiting for API response...</pre>
+    </section>
+
+    <div class="footer">
+      The page now reads and prints any valid JSON response. The metric cards still try to surface known keys when they exist.
+    </div>
+  </main>
+
+  <script>
+    const FALLBACK_ENDPOINT = "https://status.hectorbogdan.com/api/status";
+    const DEFAULT_ENDPOINT =
+      location.origin.startsWith("http") && !location.origin.includes("127.0.0.1") && !location.origin.includes("localhost")
+        ? new URL("/api/status", location.origin).toString()
+        : FALLBACK_ENDPOINT;
+
+    const state = {
+      timerId: null,
+      endpoint: DEFAULT_ENDPOINT,
+      hasLoadedSuccessfully: false
+    };
+
+    const els = {
+      endpoint: document.getElementById("endpoint"),
+      themeBtn: document.getElementById("theme-btn"),
+      refreshBtn: document.getElementById("refresh-btn"),
+      connectionText: document.getElementById("connection-text"),
+      healthBadge: document.getElementById("health-badge"),
+      lastUpdated: document.getElementById("last-updated"),
+      message: document.getElementById("message"),
+      cpuValue: document.getElementById("cpu-value"),
+      cpuSubtext: document.getElementById("cpu-subtext"),
+      cpuBar: document.getElementById("cpu-bar"),
+      gpuValue: document.getElementById("gpu-value"),
+      gpuSubtext: document.getElementById("gpu-subtext"),
+      gpuBar: document.getElementById("gpu-bar"),
+      memoryValue: document.getElementById("memory-value"),
+      memorySubtext: document.getElementById("memory-subtext"),
+      memoryBar: document.getElementById("memory-bar"),
+      vramValue: document.getElementById("vram-value"),
+      vramSubtext: document.getElementById("vram-subtext"),
+      vramBar: document.getElementById("vram-bar"),
+      jsonOutput: document.getElementById("json-output")
+    };
+
+    function applyTheme(theme) {
+      document.body.dataset.theme = theme;
+      els.themeBtn.textContent = theme === "dark" ? "Light Mode" : "Dark Mode";
+    }
+
+    function toggleTheme() {
+      const nextTheme = document.body.dataset.theme === "dark" ? "light" : "dark";
+      applyTheme(nextTheme);
+    }
+
+    function parseNumber(value) {
+      const parsed = Number.parseFloat(String(value).trim());
+      return Number.isFinite(parsed) ? parsed : null;
+    }
+
+    function formatPercent(value) {
+      return value === null ? "--" : `${value.toFixed(1)}%`;
+    }
+
+    function formatGiB(bytes) {
+      if (bytes === null) {
+        return "--";
+      }
+      return `${(bytes / (1024 ** 3)).toFixed(2)} GiB`;
+    }
+
+    function formatMiB(mib) {
+      if (mib === null) {
+        return "--";
+      }
+      if (mib >= 1024) {
+        return `${(mib / 1024).toFixed(2)} GiB`;
+      }
+      return `${mib.toFixed(0)} MiB`;
+    }
+
+    function clampPercent(value) {
+      if (!Number.isFinite(value)) {
+        return 0;
+      }
+      return Math.max(0, Math.min(100, value));
+    }
+
+    function setMessage(text, isError = false) {
+      els.message.textContent = text;
+      els.message.classList.toggle("error", isError);
+    }
+
+    function setHealth(label, good = true) {
+      els.healthBadge.textContent = label;
+      els.healthBadge.style.color = good ? "var(--good)" : "var(--bad)";
+      els.healthBadge.style.background = good ? "rgba(0, 121, 107, 0.12)" : "rgba(179, 52, 52, 0.1)";
+    }
+
+    function updateBars(cpu, gpu, memoryRatio, vramRatio) {
+      els.cpuBar.style.width = `${clampPercent(cpu)}%`;
+      els.gpuBar.style.width = `${clampPercent(gpu)}%`;
+      els.memoryBar.style.width = `${clampPercent(memoryRatio)}%`;
+      els.vramBar.style.width = `${clampPercent(vramRatio)}%`;
+    }
+
+    function renderData(payload) {
+      els.jsonOutput.textContent = JSON.stringify(payload, null, 2);
+
+      const cpu = parseNumber(payload["CPU Usage"]);
+      const gpu = parseNumber(payload["GPU Usage"]);
+      const memoryBytes = parseNumber(payload["Memory Usage"]);
+      const memoryTotal = parseNumber(payload["Memory Total"]);
+      const vramUsed = parseNumber(payload["VRAM Usage"]);
+      const vramTotal = parseNumber(payload["VRAM Total"]);
+
+      const memoryRatio = memoryBytes === null || memoryTotal === null || memoryTotal <= 0 ? 0 : (memoryBytes / memoryTotal) * 100;
+      const vramRatio = vramUsed === null || vramTotal === null || vramTotal <= 0 ? 0 : (vramUsed / vramTotal) * 100;
+
+      els.cpuValue.textContent = formatPercent(cpu);
+      els.cpuSubtext.textContent = cpu === null ? "No CPU metric available" : cpu < 50 ? "Comfortable load" : cpu < 80 ? "Moderate workload" : "High processor pressure";
+
+      els.gpuValue.textContent = formatPercent(gpu);
+      els.gpuSubtext.textContent = gpu === null ? "No GPU metric available" : gpu < 40 ? "Graphics mostly idle" : gpu < 80 ? "GPU active" : "GPU close to saturation";
+
+      els.memoryValue.textContent = formatGiB(memoryBytes);
+      els.memorySubtext.textContent = memoryBytes === null || memoryTotal === null
+        ? "No memory metric available"
+        : `${formatGiB(memoryBytes)} of ${formatGiB(memoryTotal)} in use`;
+
+      els.vramValue.textContent = formatMiB(vramUsed);
+      els.vramSubtext.textContent = vramUsed === null || vramTotal === null
+        ? "No VRAM metric available"
+        : `${formatMiB(vramUsed)} of ${formatMiB(vramTotal)} in use`;
+
+      updateBars(cpu, gpu, memoryRatio, vramRatio);
+      els.connectionText.textContent = "Live";
+      els.lastUpdated.textContent = new Date().toLocaleString();
+      setHealth("Online", true);
+      setMessage("Live metrics loaded successfully.");
+    }
+
+    async function fetchStatus() {
+      const endpoint = els.endpoint.value.trim() || FALLBACK_ENDPOINT;
+      state.endpoint = endpoint;
+
+      if (!state.hasLoadedSuccessfully) {
+        els.connectionText.textContent = "Connecting";
+        setHealth("Checking", true);
+        setMessage("Connecting to the API.");
+      }
+
+      try {
+        const response = await fetch(endpoint, {
+          method: "GET",
+          headers: { "Accept": "application/json" },
+          cache: "no-store"
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        const payload = await response.json();
+        state.hasLoadedSuccessfully = true;
+        renderData(payload);
+      } catch (error) {
+        els.jsonOutput.textContent = `Request failed.\n\n${error.message}`;
+        els.connectionText.textContent = "Unavailable";
+        setHealth("Offline", false);
+        state.hasLoadedSuccessfully = false;
+        setMessage(
+          `Could not load the API response. This usually fails because the browser blocks cross-origin requests when the API does not send CORS headers such as Access-Control-Allow-Origin. Error: ${error.message}`,
+          true
+        );
+      }
+    }
+
+    function startAutoRefresh() {
+      if (state.timerId) {
+        clearInterval(state.timerId);
+      }
+      state.timerId = setInterval(fetchStatus, 500);
+    }
+
+    els.endpoint.value = state.endpoint;
+    applyTheme("dark");
+    els.themeBtn.addEventListener("click", toggleTheme);
+    els.refreshBtn.addEventListener("click", fetchStatus);
+    els.endpoint.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        fetchStatus();
+      }
+    });
+
+    fetchStatus();
+    startAutoRefresh();
+  </script>
+</body>
+</html>

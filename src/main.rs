@@ -1,8 +1,9 @@
 use std::time::Duration;
 
-use axum::{Router, routing::get};
+use axum::{Router, routing::{get, get_service}};
 use tokio::time::{Instant, interval_at};
 use tower_http::cors::{Any, CorsLayer};
+use tower_http::services::ServeDir;
 
 mod system_info;
 mod handlers;
@@ -18,10 +19,13 @@ async fn main() {
         .allow_methods(Any)
         .allow_headers(Any);
 
+    let frontend_service = get_service(ServeDir::new("frontend").append_index_html_on_directories(true));
+
     let app = Router::new()
         .route("/api/", get(sysinfo))
         .route("/api/status", get(sysinfo))
         .route("/api/log", get(syslog))
+        .fallback_service(frontend_service)
         .layer(cors);
 
     let start = Instant::now() + Duration::from_secs(1);

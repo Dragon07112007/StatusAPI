@@ -1,0 +1,1266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Usage History</title>
+  <style>
+    :root {
+      --bg: #101317;
+      --panel: rgba(20, 25, 31, 0.82);
+      --panel-strong: rgba(25, 31, 38, 0.96);
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --line: rgba(148, 163, 184, 0.16);
+      --accent: #14b8a6;
+      --accent-2: #f97316;
+      --accent-3: #38bdf8;
+      --accent-4: #facc15;
+      --good: #34d399;
+      --bad: #f87171;
+      --shadow: 0 30px 80px rgba(0, 0, 0, 0.35);
+      --message-bg: rgba(255, 255, 255, 0.04);
+      --chart-fill: rgba(20, 184, 166, 0.16);
+      color-scheme: dark;
+    }
+
+    body[data-theme="light"] {
+      --bg: #f4efe7;
+      --panel: rgba(255, 252, 247, 0.8);
+      --panel-strong: rgba(255, 252, 247, 0.94);
+      --text: #1e1d1a;
+      --muted: #6f685d;
+      --line: rgba(33, 31, 27, 0.1);
+      --accent: #00796b;
+      --accent-2: #e07a5f;
+      --accent-3: #3b82f6;
+      --accent-4: #d97706;
+      --good: #1d7f56;
+      --bad: #b33434;
+      --shadow: 0 30px 80px rgba(72, 52, 32, 0.12);
+      --message-bg: rgba(255, 255, 255, 0.56);
+      --chart-fill: rgba(0, 121, 107, 0.14);
+      color-scheme: light;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(20, 184, 166, 0.18), transparent 28%),
+        radial-gradient(circle at 85% 15%, rgba(249, 115, 22, 0.16), transparent 22%),
+        linear-gradient(180deg, #0b0f13 0%, var(--bg) 100%);
+      padding: 32px 20px 48px;
+    }
+
+    body[data-theme="light"] {
+      background:
+        radial-gradient(circle at top left, rgba(242, 204, 143, 0.55), transparent 30%),
+        radial-gradient(circle at 85% 15%, rgba(224, 122, 95, 0.22), transparent 22%),
+        linear-gradient(180deg, #fcf8f2 0%, var(--bg) 100%);
+    }
+
+    .shell {
+      max-width: 1180px;
+      margin: 0 auto;
+    }
+
+    .hero,
+    .summary-grid,
+    .chart-grid {
+      display: grid;
+      gap: 18px;
+    }
+
+    .hero {
+      grid-template-columns: 1.2fr 0.8fr;
+      align-items: stretch;
+      margin-bottom: 24px;
+    }
+
+    .panel,
+    .chart-card,
+    .summary-card {
+      background: var(--panel);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+    }
+
+    .hero-card {
+      padding: 32px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.9rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 18px;
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 32px;
+      height: 1px;
+      background: currentColor;
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin-top: 0;
+    }
+
+    h1 {
+      font-family: "Space Grotesk", "IBM Plex Sans", sans-serif;
+      font-size: clamp(2.3rem, 5vw, 4.6rem);
+      line-height: 0.95;
+      letter-spacing: -0.05em;
+      max-width: 11ch;
+      margin-bottom: 18px;
+    }
+
+    .lead {
+      max-width: 58ch;
+      color: var(--muted);
+      line-height: 1.7;
+      margin-bottom: 24px;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .button-link,
+    button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      border: 0;
+      border-radius: 14px;
+      padding: 13px 18px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      color: white;
+      background: linear-gradient(135deg, var(--accent), #0f9d8d);
+    }
+
+    .button-link.secondary,
+    .ghost-button {
+      color: var(--text);
+      border: 1px solid var(--line);
+      background: var(--panel-strong);
+    }
+
+    .panel {
+      padding: 28px;
+      display: grid;
+      gap: 18px;
+    }
+
+    .status-row,
+    .summary-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .status-row {
+      display: grid;
+      gap: 14px;
+      padding-bottom: 18px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      font-weight: 600;
+      background: rgba(0, 121, 107, 0.12);
+      color: var(--good);
+      width: fit-content;
+    }
+
+    .badge::before {
+      content: "";
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: currentColor;
+      box-shadow: 0 0 0 6px rgba(29, 127, 86, 0.12);
+    }
+
+    .meta-label {
+      font-size: 0.82rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+
+    .meta-value {
+      margin-top: 6px;
+      font-size: 1.05rem;
+      font-weight: 600;
+    }
+
+    .controls {
+      display: grid;
+      gap: 10px;
+    }
+
+    .controls label {
+      font-size: 0.85rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+
+    .controls-row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .control-stack {
+      display: grid;
+      gap: 10px;
+    }
+
+    .range-meta {
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.5;
+    }
+
+    input {
+      width: 100%;
+      border: 1px solid var(--line);
+      background: var(--panel-strong);
+      border-radius: 14px;
+      padding: 13px 14px;
+      font: inherit;
+      color: var(--text);
+    }
+
+    select {
+      width: 100%;
+      border: 1px solid var(--line);
+      background: var(--panel-strong);
+      border-radius: 14px;
+      padding: 13px 14px;
+      font: inherit;
+      color: var(--text);
+    }
+
+    .summary-card {
+      padding: 22px;
+    }
+
+    .summary-value {
+      font-family: "Space Grotesk", "IBM Plex Sans", sans-serif;
+      font-size: clamp(1.6rem, 3vw, 2.4rem);
+      line-height: 1;
+      letter-spacing: -0.05em;
+      margin: 10px 0 8px;
+    }
+
+    .summary-note {
+      color: var(--muted);
+      line-height: 1.5;
+      min-height: 3em;
+    }
+
+    .message {
+      margin: 22px 0;
+      padding: 18px 20px;
+      border-radius: 18px;
+      background: var(--message-bg);
+      border: 1px solid var(--line);
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .message.error {
+      color: var(--bad);
+      border-color: rgba(179, 52, 52, 0.22);
+      background: rgba(179, 52, 52, 0.06);
+    }
+
+    .chart-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .chart-card {
+      padding: 24px;
+      min-height: 360px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .chart-card[hidden] {
+      display: none;
+    }
+
+    .chart-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      align-items: flex-start;
+    }
+
+    .chart-header h2 {
+      margin-bottom: 6px;
+      font-size: 1.25rem;
+    }
+
+    .chart-subtext {
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .chart-stat {
+      text-align: right;
+      min-width: 132px;
+    }
+
+    .chart-stat-label {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+    }
+
+    .chart-stat-value {
+      margin-top: 8px;
+      font-family: "Space Grotesk", "IBM Plex Sans", sans-serif;
+      font-size: 1.8rem;
+      letter-spacing: -0.04em;
+    }
+
+    .chart-surface {
+      width: 100%;
+      min-height: 240px;
+      border-radius: 22px;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02));
+      border: 1px solid var(--line);
+      overflow: hidden;
+      padding: 10px;
+    }
+
+    .chart-svg {
+      width: 100%;
+      height: 240px;
+      display: block;
+    }
+
+    .chart-y-label {
+      fill: var(--muted);
+      font: 12px "IBM Plex Sans", "Segoe UI", sans-serif;
+    }
+
+    .chart-empty {
+      min-height: 240px;
+      display: grid;
+      place-items: center;
+      color: var(--muted);
+      text-align: center;
+      padding: 28px;
+      line-height: 1.6;
+    }
+
+    .chart-axis {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    .raw-panel {
+      margin-top: 22px;
+      padding: 22px;
+      background: rgba(8, 11, 15, 0.98);
+      color: #e9f1f7;
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      overflow: auto;
+    }
+
+    body[data-theme="light"] .raw-panel {
+      background: rgba(24, 28, 34, 0.96);
+    }
+
+    .raw-panel h2 {
+      margin: 0 0 14px;
+      font-size: 0.95rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #9bb3c7;
+    }
+
+    pre {
+      margin: 0;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font: 0.95rem/1.6 "IBM Plex Mono", "SFMono-Regular", monospace;
+    }
+
+    .footer {
+      margin-top: 14px;
+      font-size: 0.88rem;
+      color: var(--muted);
+    }
+
+    @media (max-width: 980px) {
+      .hero,
+      .summary-grid,
+      .chart-grid,
+      .status-row {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 680px) {
+      body {
+        padding-inline: 14px;
+      }
+
+      .panel,
+      .summary-card,
+      .chart-card {
+        border-radius: 22px;
+      }
+
+      .controls-row,
+      .chart-header {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .chart-stat {
+        text-align: left;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="hero">
+      <article class="panel hero-card">
+        <div class="eyebrow">Usage History</div>
+        <h1>Resource trends over time.</h1>
+        <p class="lead">
+          This page reads the status log feed, converts Unix epoch seconds into local timestamps, and renders a separate time-series view for each machine usage metric.
+        </p>
+        <div class="hero-actions">
+          <a class="button-link secondary" href="./index.html">Live Status</a>
+        </div>
+      </article>
+
+      <aside class="panel">
+        <div class="status-row">
+          <div>
+            <div class="meta-label">Connection</div>
+            <div class="meta-value" id="connection-text">Waiting for data</div>
+          </div>
+          <div>
+            <div class="meta-label">Feed Health</div>
+            <div class="badge" id="health-badge">Checking</div>
+          </div>
+          <div>
+            <div class="meta-label">Last Refresh</div>
+            <div class="meta-value" id="last-updated">Never</div>
+          </div>
+        </div>
+
+        <div class="controls">
+          <label for="endpoint">Log Endpoint</label>
+          <div class="controls-row">
+            <input id="endpoint" type="url" spellcheck="false">
+            <button id="theme-btn" class="ghost-button" type="button">Light Mode</button>
+            <button id="refresh-btn" type="button">Refresh</button>
+          </div>
+        </div>
+
+        <div class="controls">
+          <label for="time-window">View Range</label>
+          <div class="control-stack">
+            <select id="time-window">
+              <option value="1h">Last 1 hour</option>
+              <option value="6h" selected>Last 6 hours</option>
+              <option value="12h">Last 12 hours</option>
+              <option value="custom">Custom sample time frame</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="controls" id="custom-range-controls">
+          <label for="start-time">Sample Time Frame</label>
+          <div class="control-stack">
+            <div class="controls-row range-row">
+              <input id="start-time" type="datetime-local" step="1">
+              <input id="end-time" type="datetime-local" step="1">
+            </div>
+            <div class="range-meta" id="range-meta">Waiting for the log feed.</div>
+          </div>
+        </div>
+      </aside>
+    </section>
+
+    <section class="summary-grid">
+      <article class="summary-card">
+        <div class="meta-label">Sample Count</div>
+        <div class="summary-value" id="sample-count">--</div>
+        <div class="summary-note" id="sample-count-note">Waiting for the log feed.</div>
+      </article>
+      <article class="summary-card">
+        <div class="meta-label">Latest Sample</div>
+        <div class="summary-value" id="latest-sample">--</div>
+        <div class="summary-note" id="latest-sample-note">No timestamp available yet.</div>
+      </article>
+      <article class="summary-card">
+        <div class="meta-label">Visible Metrics</div>
+        <div class="summary-value" id="visible-metrics">--</div>
+        <div class="summary-note" id="visible-metrics-note">Graphs appear when metric data is present.</div>
+      </article>
+    </section>
+
+    <section class="message" id="message">Connecting to the log API.</section>
+
+    <section class="chart-grid" id="chart-grid"></section>
+
+    <section class="raw-panel">
+      <h2>Raw JSON</h2>
+      <pre id="json-output">Waiting for API response...</pre>
+    </section>
+
+    <div class="footer">
+      Invalid rows are skipped, and graphs appear only when the log feed contains valid points for the metric.
+    </div>
+  </main>
+
+  <script>
+    const FALLBACK_LOG_ENDPOINT = "https://status.hectorbogdan.com/api/log";
+    const DISPLAY_TIME_ZONE = "Europe/Berlin";
+    const DEFAULT_LOG_ENDPOINT =
+      location.origin.startsWith("http") && !location.origin.includes("127.0.0.1") && !location.origin.includes("localhost")
+        ? new URL("/api/log", location.origin).toString()
+        : FALLBACK_LOG_ENDPOINT;
+
+    const timestampFormatter = new Intl.DateTimeFormat(undefined, {
+      timeZone: DISPLAY_TIME_ZONE,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit"
+    });
+
+    const timeOnlyFormatter = new Intl.DateTimeFormat(undefined, {
+      timeZone: DISPLAY_TIME_ZONE,
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit"
+    });
+
+    const METRICS = [
+      {
+        key: "CPU Usage",
+        color: "var(--accent)",
+        formatter: (value) => formatPercent(value),
+        description: "Processor load sampled from the status logger."
+      },
+      {
+        key: "GPU Usage",
+        color: "var(--accent-2)",
+        formatter: (value) => formatPercent(value),
+        description: "GPU utilization over the captured history."
+      },
+      {
+        key: "Memory Usage",
+        color: "var(--accent-3)",
+        formatter: (value) => formatGiB(value),
+        description: "System memory usage converted from bytes to GiB."
+      },
+      {
+        key: "VRAM Usage",
+        color: "var(--accent-4)",
+        formatter: (value) => formatMemoryMib(value),
+        description: "Video memory usage converted from MiB with GiB promotion."
+      }
+    ];
+
+    const TIME_WINDOWS = [
+      { value: "1h", label: "Last 1 hour", durationMs: 60 * 60 * 1000 },
+      { value: "6h", label: "Last 6 hours", durationMs: 6 * 60 * 60 * 1000 },
+      { value: "12h", label: "Last 12 hours", durationMs: 12 * 60 * 60 * 1000 },
+      { value: "custom", label: "Custom sample time frame", durationMs: null }
+    ];
+
+    const state = {
+      endpoint: DEFAULT_LOG_ENDPOINT,
+      rawPayload: null,
+      availableRange: null,
+      selectedWindow: "6h",
+      selectedRange: {
+        startMs: null,
+        endMs: null
+      }
+    };
+
+    const els = {
+      endpoint: document.getElementById("endpoint"),
+      timeWindow: document.getElementById("time-window"),
+      customRangeControls: document.getElementById("custom-range-controls"),
+      startTime: document.getElementById("start-time"),
+      endTime: document.getElementById("end-time"),
+      rangeMeta: document.getElementById("range-meta"),
+      themeBtn: document.getElementById("theme-btn"),
+      refreshBtn: document.getElementById("refresh-btn"),
+      connectionText: document.getElementById("connection-text"),
+      healthBadge: document.getElementById("health-badge"),
+      lastUpdated: document.getElementById("last-updated"),
+      sampleCount: document.getElementById("sample-count"),
+      sampleCountNote: document.getElementById("sample-count-note"),
+      latestSample: document.getElementById("latest-sample"),
+      latestSampleNote: document.getElementById("latest-sample-note"),
+      visibleMetrics: document.getElementById("visible-metrics"),
+      visibleMetricsNote: document.getElementById("visible-metrics-note"),
+      message: document.getElementById("message"),
+      chartGrid: document.getElementById("chart-grid"),
+      jsonOutput: document.getElementById("json-output")
+    };
+
+    function applyTheme(theme) {
+      document.body.dataset.theme = theme;
+      els.themeBtn.textContent = theme === "dark" ? "Light Mode" : "Dark Mode";
+    }
+
+    function toggleTheme() {
+      const nextTheme = document.body.dataset.theme === "dark" ? "light" : "dark";
+      applyTheme(nextTheme);
+    }
+
+    function setMessage(text, isError = false) {
+      els.message.textContent = text;
+      els.message.classList.toggle("error", isError);
+    }
+
+    function setHealth(label, good = true) {
+      els.healthBadge.textContent = label;
+      els.healthBadge.style.color = good ? "var(--good)" : "var(--bad)";
+      els.healthBadge.style.background = good ? "rgba(0, 121, 107, 0.12)" : "rgba(179, 52, 52, 0.1)";
+    }
+
+    function parseNumber(value) {
+      const parsed = Number.parseFloat(String(value).trim());
+      return Number.isFinite(parsed) ? parsed : null;
+    }
+
+    function formatPercent(value) {
+      return value === null ? "--" : `${value.toFixed(1)}%`;
+    }
+
+    function formatGiB(bytes) {
+      if (bytes === null) {
+        return "--";
+      }
+      return `${(bytes / (1024 ** 3)).toFixed(2)} GiB`;
+    }
+
+    function formatMemoryMib(mib) {
+      if (mib === null) {
+        return "--";
+      }
+      if (mib >= 1024) {
+        return `${(mib / 1024).toFixed(2)} GiB`;
+      }
+      return `${mib.toFixed(0)} MiB`;
+    }
+
+    function formatTimestamp(timestampMs) {
+      return `${timestampFormatter.format(new Date(timestampMs))} (${DISPLAY_TIME_ZONE})`;
+    }
+
+    function padDatePart(value) {
+      return String(value).padStart(2, "0");
+    }
+
+    function getTimeZoneParts(timestampMs) {
+      const parts = new Intl.DateTimeFormat("en-CA", {
+        timeZone: DISPLAY_TIME_ZONE,
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false
+      }).formatToParts(new Date(timestampMs));
+
+      return Object.fromEntries(
+        parts
+          .filter((part) => part.type !== "literal")
+          .map((part) => [part.type, part.value])
+      );
+    }
+
+    function getTimeZoneOffsetMs(timestampMs) {
+      const parts = getTimeZoneParts(timestampMs);
+      const berlinAsUtc = Date.UTC(
+        Number(parts.year),
+        Number(parts.month) - 1,
+        Number(parts.day),
+        Number(parts.hour),
+        Number(parts.minute),
+        Number(parts.second)
+      );
+      return berlinAsUtc - timestampMs;
+    }
+
+    function formatDateTimeLocalValue(timestampMs) {
+      const parts = getTimeZoneParts(timestampMs);
+      return [
+        parts.year,
+        parts.month,
+        parts.day
+      ].join("-") + "T" + [
+        parts.hour,
+        parts.minute,
+        parts.second
+      ].join(":");
+    }
+
+    function parseDateTimeLocalValue(value) {
+      if (!value) {
+        return null;
+      }
+
+      const match = value.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?$/);
+      if (!match) {
+        return null;
+      }
+
+      const [, year, month, day, hour, minute, second = "00"] = match;
+      const utcGuess = Date.UTC(
+        Number(year),
+        Number(month) - 1,
+        Number(day),
+        Number(hour),
+        Number(minute),
+        Number(second)
+      );
+
+      const initialOffset = getTimeZoneOffsetMs(utcGuess);
+      const adjustedTimestamp = utcGuess - initialOffset;
+      const adjustedOffset = getTimeZoneOffsetMs(adjustedTimestamp);
+      return utcGuess - adjustedOffset;
+    }
+
+    function formatRangeLabel(startMs, endMs) {
+      if (startMs === null || endMs === null) {
+        return "the loaded sample range";
+      }
+      return `${formatTimestamp(startMs)} to ${formatTimestamp(endMs)}`;
+    }
+
+    function getSelectedRangeLabel() {
+      const { startMs, endMs } = getSelectedRange();
+      return formatRangeLabel(startMs, endMs);
+    }
+
+    function getSelectedTimeWindow() {
+      return TIME_WINDOWS.find((window) => window.value === state.selectedWindow) ?? TIME_WINDOWS[1];
+    }
+
+    function isCustomRangeSelected() {
+      return state.selectedWindow === "custom";
+    }
+
+    function updateRangeControlVisibility() {
+      els.customRangeControls.hidden = !isCustomRangeSelected();
+    }
+
+    function updateRangeInputs() {
+      const { availableRange, selectedRange } = state;
+
+      if (!availableRange) {
+        els.startTime.value = "";
+        els.endTime.value = "";
+        els.startTime.min = "";
+        els.startTime.max = "";
+        els.endTime.min = "";
+        els.endTime.max = "";
+        els.rangeMeta.textContent = "Waiting for the log feed.";
+        return;
+      }
+
+      const minValue = formatDateTimeLocalValue(availableRange.minTimeMs);
+      const maxValue = formatDateTimeLocalValue(availableRange.maxTimeMs);
+
+      els.startTime.min = minValue;
+      els.startTime.max = maxValue;
+      els.endTime.min = minValue;
+      els.endTime.max = maxValue;
+      els.startTime.value = formatDateTimeLocalValue(selectedRange.startMs ?? availableRange.minTimeMs);
+      els.endTime.value = formatDateTimeLocalValue(selectedRange.endMs ?? availableRange.maxTimeMs);
+      els.rangeMeta.textContent = `Available samples span ${formatRangeLabel(availableRange.minTimeMs, availableRange.maxTimeMs)}.`;
+    }
+
+    function syncSelectedRangeToAvailable() {
+      if (!state.availableRange) {
+        state.selectedRange.startMs = null;
+        state.selectedRange.endMs = null;
+        return;
+      }
+
+      const { minTimeMs, maxTimeMs } = state.availableRange;
+      const nextStart = state.selectedRange.startMs === null
+        ? minTimeMs
+        : Math.min(Math.max(state.selectedRange.startMs, minTimeMs), maxTimeMs);
+      const nextEnd = state.selectedRange.endMs === null
+        ? maxTimeMs
+        : Math.min(Math.max(state.selectedRange.endMs, minTimeMs), maxTimeMs);
+
+      state.selectedRange.startMs = Math.min(nextStart, nextEnd);
+      state.selectedRange.endMs = Math.max(nextStart, nextEnd);
+    }
+
+    function getSelectedRange() {
+      if (!state.availableRange) {
+        return { startMs: null, endMs: null };
+      }
+
+      if (!isCustomRangeSelected()) {
+        const selectedWindow = getSelectedTimeWindow();
+        const latestSample = state.availableRange.maxTimeMs;
+        return {
+          startMs: Math.max(state.availableRange.minTimeMs, latestSample - selectedWindow.durationMs),
+          endMs: latestSample
+        };
+      }
+
+      return {
+        startMs: state.selectedRange.startMs ?? state.availableRange.minTimeMs,
+        endMs: state.selectedRange.endMs ?? state.availableRange.maxTimeMs
+      };
+    }
+
+    function normalizePayload(payload) {
+      if (!Array.isArray(payload)) {
+        return [];
+      }
+
+      const normalizedRows = payload.flatMap((row) => {
+        if (!row || typeof row !== "object") {
+          return [];
+        }
+
+        const timeSeconds = parseNumber(row.Time);
+        if (timeSeconds === null) {
+          return [];
+        }
+
+        const normalized = {
+          timeMs: timeSeconds * 1000
+        };
+
+        let validMetricCount = 0;
+        for (const metric of METRICS) {
+          const value = parseNumber(row[metric.key]);
+          normalized[metric.key] = value;
+          if (value !== null) {
+            validMetricCount += 1;
+          }
+        }
+
+        return validMetricCount > 0 ? [normalized] : [];
+      });
+
+      return normalizedRows.sort((left, right) => left.timeMs - right.timeMs);
+    }
+
+    function filterSamplesBySelectedRange(samples) {
+      if (samples.length === 0) {
+        return samples;
+      }
+
+      const { startMs, endMs } = getSelectedRange();
+      if (startMs === null || endMs === null) {
+        return samples;
+      }
+
+      return samples.filter((sample) => sample.timeMs >= startMs && sample.timeMs <= endMs);
+    }
+
+    function createSvgTag(tagName, attributes = {}) {
+      const element = document.createElementNS("http://www.w3.org/2000/svg", tagName);
+      for (const [key, value] of Object.entries(attributes)) {
+        element.setAttribute(key, String(value));
+      }
+      return element;
+    }
+
+    function buildChartSvg(points, metric) {
+      const width = 760;
+      const height = 240;
+      const padding = { top: 18, right: 18, bottom: 24, left: 78 };
+      const innerWidth = width - padding.left - padding.right;
+      const innerHeight = height - padding.top - padding.bottom;
+      const times = points.map((point) => point.timeMs);
+      const values = points.map((point) => point.value);
+      const minTime = Math.min(...times);
+      const maxTime = Math.max(...times);
+      const minValue = Math.min(...values);
+      const maxValue = Math.max(...values);
+      const timeSpan = Math.max(maxTime - minTime, 1);
+      const valueSpan = Math.max(maxValue - minValue, maxValue === 0 ? 1 : maxValue * 0.1);
+
+      const getX = (timeMs) => padding.left + ((timeMs - minTime) / timeSpan) * innerWidth;
+      const getY = (value) => {
+        const normalized = (value - minValue) / valueSpan;
+        return padding.top + innerHeight - normalized * innerHeight;
+      };
+
+      const linePath = points
+        .map((point, index) => `${index === 0 ? "M" : "L"} ${getX(point.timeMs).toFixed(2)} ${getY(point.value).toFixed(2)}`)
+        .join(" ");
+      const areaPath = [
+        `M ${getX(points[0].timeMs).toFixed(2)} ${(padding.top + innerHeight).toFixed(2)}`,
+        ...points.map((point) => `L ${getX(point.timeMs).toFixed(2)} ${getY(point.value).toFixed(2)}`),
+        `L ${getX(points[points.length - 1].timeMs).toFixed(2)} ${(padding.top + innerHeight).toFixed(2)}`,
+        "Z"
+      ].join(" ");
+
+      const svg = createSvgTag("svg", {
+        class: "chart-svg",
+        viewBox: `0 0 ${width} ${height}`,
+        role: "img",
+        "aria-label": `${metric.key} history chart`
+      });
+
+      const tickValues = [maxValue, minValue + valueSpan * 0.5, minValue];
+      for (const tickValue of tickValues) {
+        const y = getY(tickValue);
+        svg.appendChild(createSvgTag("line", {
+          x1: padding.left,
+          y1: y.toFixed(2),
+          x2: width - padding.right,
+          y2: y.toFixed(2),
+          stroke: "rgba(148, 163, 184, 0.18)",
+          "stroke-width": "1"
+        }));
+
+        const tickLabel = createSvgTag("text", {
+          x: padding.left - 12,
+          y: (y + 4).toFixed(2),
+          "text-anchor": "end",
+          class: "chart-y-label"
+        });
+        tickLabel.textContent = metric.formatter(tickValue);
+        svg.appendChild(tickLabel);
+      }
+
+      svg.appendChild(createSvgTag("line", {
+        x1: padding.left,
+        y1: padding.top,
+        x2: padding.left,
+        y2: (padding.top + innerHeight).toFixed(2),
+        stroke: "rgba(148, 163, 184, 0.26)",
+        "stroke-width": "1.5"
+      }));
+
+      svg.appendChild(createSvgTag("path", {
+        d: areaPath,
+        fill: "var(--chart-fill)"
+      }));
+
+      svg.appendChild(createSvgTag("path", {
+        d: linePath,
+        fill: "none",
+        stroke: metric.color,
+        "stroke-width": "3",
+        "stroke-linecap": "round",
+        "stroke-linejoin": "round"
+      }));
+
+      for (const point of points) {
+        const cx = getX(point.timeMs).toFixed(2);
+        const cy = getY(point.value).toFixed(2);
+        const circle = createSvgTag("circle", {
+          cx,
+          cy,
+          r: "4.5",
+          fill: metric.color,
+          stroke: "rgba(8, 11, 15, 0.85)",
+          "stroke-width": "2"
+        });
+        const title = createSvgTag("title");
+        title.textContent = `${formatTimestamp(point.timeMs)} • ${metric.formatter(point.value)}`;
+        circle.appendChild(title);
+        svg.appendChild(circle);
+      }
+
+      return {
+        svg,
+        startLabel: formatTimestamp(minTime),
+        endLabel: formatTimestamp(maxTime),
+        minValue: metric.formatter(minValue),
+        maxValue: metric.formatter(maxValue)
+      };
+    }
+
+    function renderCharts(samples) {
+      els.chartGrid.innerHTML = "";
+
+      let visibleMetrics = 0;
+      for (const metric of METRICS) {
+        const points = samples
+          .filter((sample) => sample[metric.key] !== null)
+          .map((sample) => ({
+            timeMs: sample.timeMs,
+            value: sample[metric.key]
+          }));
+
+        if (points.length === 0) {
+          continue;
+        }
+
+        visibleMetrics += 1;
+
+        const card = document.createElement("article");
+        card.className = "chart-card";
+
+        const chart = buildChartSvg(points, metric);
+        const latestPoint = points[points.length - 1];
+
+        card.innerHTML = `
+          <div class="chart-header">
+            <div>
+              <h2>${metric.key}</h2>
+              <div class="chart-subtext">${metric.description}</div>
+            </div>
+            <div class="chart-stat">
+              <div class="chart-stat-label">Latest</div>
+              <div class="chart-stat-value">${metric.formatter(latestPoint.value)}</div>
+            </div>
+          </div>
+          <div class="chart-surface"></div>
+          <div class="chart-axis">
+            <span>${chart.startLabel}</span>
+            <span>Range ${chart.minValue} to ${chart.maxValue}</span>
+            <span>${chart.endLabel}</span>
+          </div>
+        `;
+
+        card.querySelector(".chart-surface").appendChild(chart.svg);
+        els.chartGrid.appendChild(card);
+      }
+
+      if (visibleMetrics === 0) {
+        els.chartGrid.innerHTML = `
+          <article class="chart-card">
+            <div class="chart-empty">
+              No valid metric rows were found in the log payload. Check the endpoint or wait for fresh samples.
+            </div>
+          </article>
+        `;
+      }
+
+      els.visibleMetrics.textContent = String(visibleMetrics);
+      els.visibleMetricsNote.textContent = visibleMetrics === 0
+        ? `No graphs are currently renderable for ${getSelectedRangeLabel()}.`
+        : `${visibleMetrics} metric graph${visibleMetrics === 1 ? "" : "s"} rendered for ${getSelectedRangeLabel()}.`;
+    }
+
+    function renderSummary(samples) {
+      els.sampleCount.textContent = String(samples.length);
+      els.sampleCountNote.textContent = samples.length === 0
+        ? `No usable samples fell within ${getSelectedRangeLabel()}.`
+        : `${samples.length} valid sample${samples.length === 1 ? "" : "s"} are visible for ${getSelectedRangeLabel()}.`;
+
+      if (samples.length === 0) {
+        els.latestSample.textContent = "--";
+        els.latestSampleNote.textContent = "No timestamp available yet.";
+        return;
+      }
+
+      const latest = samples[samples.length - 1];
+      els.latestSample.textContent = `${timeOnlyFormatter.format(new Date(latest.timeMs))} (${DISPLAY_TIME_ZONE})`;
+      els.latestSampleNote.textContent = formatTimestamp(latest.timeMs);
+    }
+
+    function renderHistory(payload) {
+      const normalized = normalizePayload(payload);
+      state.availableRange = normalized.length > 0
+        ? {
+            minTimeMs: normalized[0].timeMs,
+            maxTimeMs: normalized[normalized.length - 1].timeMs
+          }
+        : null;
+      syncSelectedRangeToAvailable();
+      updateRangeInputs();
+      const filtered = filterSamplesBySelectedRange(normalized);
+      renderSummary(filtered);
+      renderCharts(filtered);
+      return { normalized, filtered };
+    }
+
+    async function fetchHistory() {
+      const endpoint = els.endpoint.value.trim() || FALLBACK_LOG_ENDPOINT;
+      state.endpoint = endpoint;
+      els.connectionText.textContent = "Connecting";
+      setHealth("Checking", true);
+      setMessage("Connecting to the log API.");
+
+      try {
+        const response = await fetch(endpoint, {
+          method: "GET",
+          headers: { "Accept": "application/json" },
+          cache: "no-store"
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        const payload = await response.json();
+        state.rawPayload = payload;
+        els.jsonOutput.textContent = JSON.stringify(payload, null, 2);
+
+        const { normalized, filtered } = renderHistory(payload);
+
+        els.connectionText.textContent = "Live";
+        els.lastUpdated.textContent = `${timestampFormatter.format(new Date())} (${DISPLAY_TIME_ZONE})`;
+        setHealth("Online", true);
+        setMessage(
+          normalized.length > 0
+            ? filtered.length > 0
+              ? `Usage history loaded successfully for ${getSelectedRangeLabel()}.`
+              : `Usage history loaded, but no samples fell within ${getSelectedRangeLabel()}.`
+            : "The endpoint responded, but no valid usage rows were available to chart."
+        );
+      } catch (error) {
+        els.jsonOutput.textContent = `Request failed.\n\n${error.message}`;
+        els.chartGrid.innerHTML = `
+          <article class="chart-card">
+            <div class="chart-empty">
+              Could not load the usage history feed. Check the endpoint and try again.
+            </div>
+          </article>
+        `;
+        els.sampleCount.textContent = "--";
+        els.sampleCountNote.textContent = "No data loaded.";
+        els.latestSample.textContent = "--";
+        els.latestSampleNote.textContent = "No timestamp available.";
+        els.visibleMetrics.textContent = "--";
+        els.visibleMetricsNote.textContent = "Graphs are unavailable until the request succeeds.";
+        els.connectionText.textContent = "Unavailable";
+        state.availableRange = null;
+        state.selectedRange.startMs = null;
+        state.selectedRange.endMs = null;
+        updateRangeInputs();
+        setHealth("Offline", false);
+        setMessage(
+          `Could not load the log API response. This can fail when the endpoint is unreachable or blocked by the browser. Error: ${error.message}`,
+          true
+        );
+      }
+    }
+
+    function handleRangeChange() {
+      if (!isCustomRangeSelected()) {
+        return;
+      }
+
+      if (!state.availableRange) {
+        return;
+      }
+
+      const startMs = parseDateTimeLocalValue(els.startTime.value);
+      const endMs = parseDateTimeLocalValue(els.endTime.value);
+
+      if (startMs === null || endMs === null) {
+        return;
+      }
+
+      state.selectedRange.startMs = startMs;
+      state.selectedRange.endMs = endMs;
+      syncSelectedRangeToAvailable();
+      updateRangeInputs();
+
+      if (state.rawPayload === null) {
+        return;
+      }
+
+      const { normalized, filtered } = renderHistory(state.rawPayload);
+      setMessage(
+        normalized.length > 0
+          ? filtered.length > 0
+            ? `Displaying usage history for ${getSelectedRangeLabel()}.`
+            : `No samples are available for ${getSelectedRangeLabel()}.`
+          : "The current payload does not contain valid usage history rows."
+      );
+    }
+
+    function handleTimeWindowChange() {
+      state.selectedWindow = els.timeWindow.value;
+      updateRangeControlVisibility();
+
+      if (state.rawPayload === null) {
+        return;
+      }
+
+      const { normalized, filtered } = renderHistory(state.rawPayload);
+      const descriptor = isCustomRangeSelected()
+        ? getSelectedRangeLabel()
+        : getSelectedTimeWindow().label.toLowerCase();
+
+      setMessage(
+        normalized.length > 0
+          ? filtered.length > 0
+            ? `Displaying usage history for ${descriptor}.`
+            : `No samples are available for ${descriptor}.`
+          : "The current payload does not contain valid usage history rows."
+      );
+    }
+
+    els.endpoint.value = state.endpoint;
+    els.timeWindow.value = state.selectedWindow;
+    updateRangeInputs();
+    updateRangeControlVisibility();
+    applyTheme("dark");
+    els.themeBtn.addEventListener("click", toggleTheme);
+    els.refreshBtn.addEventListener("click", fetchHistory);
+    els.timeWindow.addEventListener("change", handleTimeWindowChange);
+    els.startTime.addEventListener("change", handleRangeChange);
+    els.endTime.addEventListener("change", handleRangeChange);
+    els.endpoint.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        fetchHistory();
+      }
+    });
+
+    fetchHistory();
+  </script>
+</body>
+</html>
