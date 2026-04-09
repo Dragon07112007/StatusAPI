@@ -636,7 +636,7 @@
       if (state.timerId) {
         clearInterval(state.timerId);
       }
-      state.timerId = setInterval(fetchStatus, 500);
+      state.timerId = setInterval(fetchStatus, 2000);
     }
 
     els.endpoint.value = state.endpoint;
