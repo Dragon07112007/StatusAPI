@@ -1,9 +1,9 @@
 use axum::{Json, response::IntoResponse};
 use serde_json::{Map, Value};
-use std::io::BufWriter;
+use std::fs::{File, OpenOptions};
 use std::io::BufReader;
+use std::io::{Read, Seek, SeekFrom, Write};
 use std::process::Command;
-use std::fs::File;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use crate::system_info::{SysInfo, SystemSample};
@@ -66,15 +66,6 @@ pub async fn syslog() -> impl IntoResponse{
 }
 
 pub async fn write_logs(sample: SystemSample){
-
-    let file = File::open("logs/data.json").expect("Unable to open file!");
-    let reader = BufReader::new(file);
-    let mut json: Value = serde_json::from_reader(reader).expect("Failed to pars.");
-
-    if !json.is_array() {
-        json = Value::Array(vec![]);
-    }
-
     let mut map = serde_json::Map::new();
 
     map.insert(
@@ -98,15 +89,79 @@ pub async fn write_logs(sample: SystemSample){
         Value::String(sample.vram_usage.to_string()),
     );    
 
-    if let Some(array) = json.as_array_mut() {
-        array.push(Value::Object(map));
-        
-    } 
-
-    let file = File::create("logs/data.json").expect("Unabler to create file");
-    let writer = BufWriter::new(file);
-    serde_json::to_writer_pretty(writer, &json).expect("Failed to write!");
-    
+    append_log_entry("logs/data.json", &Value::Object(map));
 
     println!("Logs written!")
+}
+
+fn append_log_entry(path: &str, entry: &Value) {
+    let formatted_entry = indent_json_block(
+        &serde_json::to_string_pretty(entry).expect("Failed to serialize log entry"),
+    );
+
+    let mut file = OpenOptions::new()
+        .read(true)
+        .write(true)
+        .create(true)
+        .truncate(false)
+        .open(path)
+        .expect("Unable to open log file");
+
+    let file_len = file.metadata().expect("Unable to read log metadata").len();
+
+    if file_len == 0 {
+        write!(file, "[\n{formatted_entry}\n]\n").expect("Failed to initialize log file");
+        return;
+    }
+
+    let closing_bracket_pos = find_last_non_whitespace(&mut file)
+        .expect("Log file is empty or contains only whitespace");
+
+    file.seek(SeekFrom::Start(closing_bracket_pos))
+        .expect("Failed to seek to insertion point");
+
+    let mut marker: [u8; 1] = [0; 1];
+    file.read_exact(&mut marker)
+        .expect("Failed to read log terminator");
+
+    file.seek(SeekFrom::Start(closing_bracket_pos))
+        .expect("Failed to seek to insertion point");
+
+    match marker[0] {
+        b'[' => {
+            write!(file, "[\n{formatted_entry}\n]\n").expect("Failed to append first log entry");
+        }
+        b']' => {
+            file.set_len(closing_bracket_pos)
+                .expect("Failed to truncate trailing bracket");
+            file.seek(SeekFrom::Start(closing_bracket_pos))
+                .expect("Failed to seek after truncation");
+            write!(file, ",\n{formatted_entry}\n]\n").expect("Failed to append log entry");
+        }
+        _ => panic!("Log file is not a JSON array"),
+    }
+}
+
+fn find_last_non_whitespace(file: &mut File) -> Option<u64> {
+    let len = file.metadata().ok()?.len();
+
+    for pos in (0..len).rev() {
+        file.seek(SeekFrom::Start(pos)).ok()?;
+
+        let mut byte: [u8; 1] = [0; 1];
+        file.read_exact(&mut byte).ok()?;
+
+        if !byte[0].is_ascii_whitespace() {
+            return Some(pos);
+        }
+    }
+
+    None
+}
+
+fn indent_json_block(json: &str) -> String {
+    json.lines()
+        .map(|line| format!("  {line}"))
+        .collect::<Vec<_>>()
+        .join("\n")
 }
